@@ -1,6 +1,22 @@
+resolve-path "$PSScriptRoot\IronSpec-*.psm1" |
+    import-module -force
+    
 function Execute-Script {
     process {
-        write-host $_
+        $pop = $false
+        if ($_ -is [io.path] -and (test-path $_)) {
+            $file = split-path $_ -leaf
+            split-path $_ | push-location
+            $_ = $file
+            $pop = $true
+        }
+        
+        try { & $_ }
+        finally {
+            if ($pop) {
+                pop-location
+            }
+        }
     }
 }
 
@@ -15,7 +31,7 @@ function Start-Specs {
             resolve-path $_ | execute-script
         }
         catch {
-            write-host
+            write-host $_.Exception.Message
         }
     }
     end {

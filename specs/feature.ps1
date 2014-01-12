@@ -1,13 +1,25 @@
-Feature "It should calculate" {
-    Given "5" {
-        $_ = 5
-    }
+Feature "Addition" {
+<#
+In order to avoid silly mistakes
+As a math idiot
+I want to be told the sum of two numbers
+#>
+    Scenario "Add two numbers" {
     
-    When "add 5" {
-        $_ += 5
-    }
-    
-    Then "should be 10" {
-        $_ | should be_equal 60
+        Given "I have entered 50 into the calculator" {
+            $_ = 50
+        }
+   
+        And "I have entered 70 into the calculator" {
+            $_ = 70
+        }
+        
+        When "I press add" {
+            $_ = 50 + 70
+        }
+        
+        Then "The result should be 120 on the screen" {
+            $_ | should be_equal 120
+        }
     }
 }
