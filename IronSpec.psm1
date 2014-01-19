@@ -1,5 +1,16 @@
-resolve-path "$PSScriptRoot\IronSpec-*.psm1" |
-    import-module -force
+"$PSScriptRoot\IronSpec-*.psm1" | Resolve-Path | import-module -force
+
+121 | should be_equal 120
+
+$global:IronSpecTempPath = "$env:Temp\IronSpec"
+$global:IronSpecTempDir = [System.IO.Path]::GetFullPath($IronSpecTempPath)
+
+function Initialize-Specs {
+    if (Test-Path TestDrive:) { return }
+
+    New-Item -Name IronSpec -Path $env:Temp -Type Container -Force | Out-Null
+    New-PSDrive -Name IronSpecTempDir -PSProvider FileSystem -Root "$IronSpecTempPath" -Scope Global | Out-Null
+}
     
 function Execute-Script {
     process {
@@ -23,6 +34,7 @@ function Execute-Script {
 function Start-Specs {
     begin {
         $results = @()
+		Initialize-Specs
     }
     process {
         

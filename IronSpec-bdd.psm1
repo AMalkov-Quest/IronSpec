@@ -1,3 +1,5 @@
+import-module "$PSScriptRoot\IronSpec-assert.psm1" -force
+
 function Feature {
 param(
     [Parameter(Mandatory = $true, Position = 0)] $name,
@@ -5,8 +7,7 @@ param(
     [Parameter(Mandatory = $true, Position = 1)]
     [ScriptBlock] $fixture
 )
-	& $fixture
-    #Write-Host $fixture 
+	& $fixture 
 }
 
 function Scenario {
@@ -23,9 +24,9 @@ param(
     [ScriptBlock] $test = $(Throw "No test script block is provided. (Have you put the open curly brace on the next line?)")
 )
     Write-Host -ForegroundColor green $name
-    
+
     Setup-TestFunction
-    . $TestDrive\temp.ps1
+    . $IronSpecTempDir\spec.ps1
     try{
         [object]$test=(get-variable -name test -scope 1 -errorAction Stop).value
     }
@@ -34,7 +35,7 @@ param(
     }
     
     try{
-        temp
+        test
     } catch {
         Write-Host $_.Exception.Message
     }
@@ -74,10 +75,10 @@ param(
 
 function Setup-TestFunction {
 @"
-function temp {
+function test {
 $test
 }
-"@ | Microsoft.Powershell.Utility\Out-File $TestDrive\temp.ps1
+"@ | Microsoft.Powershell.Utility\Out-File $IronSpecTempDir\spec.ps1
 }
 
 export-moduleMember -function `

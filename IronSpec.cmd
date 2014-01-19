@@ -1,0 +1,1 @@
+@PowerShell -NonInteractive -NoProfile -ExecutionPolicy unrestricted -File "%~dp0\IronSpec.ps1"
