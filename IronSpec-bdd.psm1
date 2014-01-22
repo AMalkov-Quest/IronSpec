@@ -15,10 +15,38 @@ param(
     $name,
     [ScriptBlock] $fixture
 )
+    $scenario = @{}
+    $scenario.steps = New-Object System.Collections.Queue
+
     & $fixture
+    
+    $steps = ""
+    foreach($step in $scenario.steps) {
+        $step.Keys | % {
+            Write-Host -ForegroundColor green $_
+            $steps += $step[$_].ToString()
+        }
+    }
+    
+    [ScriptBlock] $test = [scriptblock]::Create($steps)
+    Write-Host -ForegroundColor green $test
+    
+    try{
+        & $test
+    } catch {
+        Write-Host $_.Exception.Message
+    }
 }
 
 function Step {
+param(
+    $name, 
+    [ScriptBlock] $test = $(Throw "No test script block is provided. (Have you put the open curly brace on the next line?)")
+)
+    $scenario.steps.Enqueue(@{$name=$test})
+}
+
+function __Step {
 param(
     $name, 
     [ScriptBlock] $test = $(Throw "No test script block is provided. (Have you put the open curly brace on the next line?)")

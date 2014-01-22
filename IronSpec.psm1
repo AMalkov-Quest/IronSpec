@@ -6,10 +6,10 @@ $global:IronSpecTempPath = "$env:Temp\IronSpec"
 $global:IronSpecTempDir = [System.IO.Path]::GetFullPath($IronSpecTempPath)
 
 function Initialize-Specs {
-    if (Test-Path TestDrive:) { return }
-
-    New-Item -Name IronSpec -Path $env:Temp -Type Container -Force | Out-Null
-    New-PSDrive -Name IronSpecTempDir -PSProvider FileSystem -Root "$IronSpecTempPath" -Scope Global | Out-Null
+    if (!(Test-Path IronSpecTempDir:)) {
+        New-Item -Name IronSpec -Path $env:Temp -Type Container -Force | Out-Null
+        New-PSDrive -Name IronSpecTempDir -PSProvider FileSystem -Root "$IronSpecTempPath" -Scope Global | Out-Null
+    }
 }
     
 function Execute-Script {
