@@ -4,6 +4,7 @@ $localappdata = $env:LOCALAPPDATA
 $home = "IronSpec"
 $global:IronSpecHomePath = "$localappdata\$home"
 $global:IronSpecTempDir = [System.IO.Path]::GetFullPath($IronSpecHomePath)
+$global:IronSpecRunScript = "$IronSpecTempDir\spec.ps1"
 
 function Initialize-Specs {
     if (!(Test-Path IronSpecTempDir:)) {

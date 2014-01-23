@@ -22,19 +22,36 @@ param(
     
     process {
         & $fixture
+        Save-Scenario $scenario
     }
     
     end {
-        $steps = ""
-        foreach($step in $scenario.steps) {
-            $step.Keys | % {
-                Write-Host -ForegroundColor green $_
-                Write-Host -ForegroundColor green $step[$_]
-                $steps += $step[$_].ToString()
-            }
+        . $IronSpecRunScript
+        try{
+            test
+        } catch {
+            Write-Host $_.Exception.Message
         }
-        
-        [ScriptBlock] $test = [scriptblock]::Create($steps)
+    }
+}
+
+function Scenario_ex {
+param(
+    $name,
+    [ScriptBlock] $fixture
+)
+    begin {
+        $scenario = @{}
+        $scenario.steps = New-Object System.Collections.Queue
+    }
+    
+    process {
+        & $fixture
+    }
+    
+    end {
+        $scenario_text = Scenario-To-Text $scenario
+        [ScriptBlock] $test = [scriptblock]::Create($scenario_text)
         
         try{
             & $test
@@ -88,30 +105,32 @@ function Save-Scenario {
 param(
     $scenario
 )
-    
-
-    Setup-TestFunction
-    . $IronSpecTempDir\spec.ps1
-    try{
-        [object]$test=(get-variable -name test -scope 1 -errorAction Stop).value
-    }
-    catch { 
-        Write-Host $_.Exception.Message
-    }
-    
-    try{
-        test
-    } catch {
-        Write-Host $_.Exception.Message
-    }
+    $scenario_text = Scenario-To-Text $scenario
+    Save-As-File $scenario_text
 }
 
-function Setup-TestFunction {
+function Scenario-To-Text {
+param(
+    $scenario
+)
+    $scenario_text = ""
+    foreach($step in $scenario.steps) {
+        $step.Keys | % {
+            Write-Host -ForegroundColor green $_
+            Write-Host -ForegroundColor green $step[$_]
+            $scenario_text += $step[$_].ToString()
+        }
+    }
+    
+    return $scenario_text
+}
+
+function Save-As-File($content) {
 @"
 function test {
-$test
+$content
 }
-"@ | Microsoft.Powershell.Utility\Out-File $IronSpecTempDir\spec.ps1
+"@ | Microsoft.Powershell.Utility\Out-File $IronSpecRunScript
 }
 
 export-moduleMember -function `
