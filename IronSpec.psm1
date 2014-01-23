@@ -1,14 +1,13 @@
 "$PSScriptRoot\IronSpec-*.psm1" | Resolve-Path | import-module -force
 
-121 | should be_equal 120
-
-$global:IronSpecTempPath = "$env:Temp\IronSpec"
-$global:IronSpecTempDir = [System.IO.Path]::GetFullPath($IronSpecTempPath)
+$localappdata = $env:LOCALAPPDATA
+$home = "IronSpec"
+$global:IronSpecHomePath = "$localappdata\$home"
+$global:IronSpecTempDir = [System.IO.Path]::GetFullPath($IronSpecHomePath)
 
 function Initialize-Specs {
     if (!(Test-Path IronSpecTempDir:)) {
-        New-Item -Name IronSpec -Path $env:Temp -Type Container -Force | Out-Null
-        New-PSDrive -Name IronSpecTempDir -PSProvider FileSystem -Root "$IronSpecTempPath" -Scope Global | Out-Null
+        New-Item -Name $home -Path $localappdata -Type Container -Force | Out-Null
     }
 }
     

@@ -15,26 +15,32 @@ param(
     $name,
     [ScriptBlock] $fixture
 )
-    $scenario = @{}
-    $scenario.steps = New-Object System.Collections.Queue
-
-    & $fixture
-    
-    $steps = ""
-    foreach($step in $scenario.steps) {
-        $step.Keys | % {
-            Write-Host -ForegroundColor green $_
-            $steps += $step[$_].ToString()
-        }
+    begin {
+        $scenario = @{}
+        $scenario.steps = New-Object System.Collections.Queue
     }
     
-    [ScriptBlock] $test = [scriptblock]::Create($steps)
-    Write-Host -ForegroundColor green $test
+    process {
+        & $fixture
+    }
     
-    try{
-        & $test
-    } catch {
-        Write-Host $_.Exception.Message
+    end {
+        $steps = ""
+        foreach($step in $scenario.steps) {
+            $step.Keys | % {
+                Write-Host -ForegroundColor green $_
+                Write-Host -ForegroundColor green $step[$_]
+                $steps += $step[$_].ToString()
+            }
+        }
+        
+        [ScriptBlock] $test = [scriptblock]::Create($steps)
+        
+        try{
+            & $test
+        } catch {
+            Write-Host $_.Exception.Message
+        }
     }
 }
 
@@ -44,29 +50,6 @@ param(
     [ScriptBlock] $test = $(Throw "No test script block is provided. (Have you put the open curly brace on the next line?)")
 )
     $scenario.steps.Enqueue(@{$name=$test})
-}
-
-function __Step {
-param(
-    $name, 
-    [ScriptBlock] $test = $(Throw "No test script block is provided. (Have you put the open curly brace on the next line?)")
-)
-    Write-Host -ForegroundColor green $name
-
-    Setup-TestFunction
-    . $IronSpecTempDir\spec.ps1
-    try{
-        [object]$test=(get-variable -name test -scope 1 -errorAction Stop).value
-    }
-    catch { 
-        Write-Host $_.Exception.Message
-    }
-    
-    try{
-        test
-    } catch {
-        Write-Host $_.Exception.Message
-    }
 }
 
 function Given {
@@ -99,6 +82,28 @@ param(
     [ScriptBlock] $test
 )
     Step $name $test
+}
+
+function Save-Scenario {
+param(
+    $scenario
+)
+    
+
+    Setup-TestFunction
+    . $IronSpecTempDir\spec.ps1
+    try{
+        [object]$test=(get-variable -name test -scope 1 -errorAction Stop).value
+    }
+    catch { 
+        Write-Host $_.Exception.Message
+    }
+    
+    try{
+        test
+    } catch {
+        Write-Host $_.Exception.Message
+    }
 }
 
 function Setup-TestFunction {
